@@ -68,7 +68,7 @@ class _CatalogSearchState extends State<CatalogSearchTab> {
                 return CupertinoActivityIndicator();
               }
               if (snapshot.hasError) {
-                return Text('エラーが発生しました。');
+                return Text('検索エラーが発生しました。');
               }
               if (snapshot.hasData) {
                 return ListView.builder(

@@ -25,11 +25,11 @@ class HomePage extends StatelessWidget {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.photo_camera),
-            title: Text('Scan'),
+            title: Text('スキャン'),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.search),
-            title: Text('Search'),
+            title: Text('検索'),
           ),
         ],
       ),

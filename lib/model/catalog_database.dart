@@ -45,6 +45,23 @@ class CatalogDatabase {
     return null;
   }
 
+  Future<List<Book>> searchByIsbn(String isbn) async {
+    var client = await db;
+
+    final Future<List<Map<String, dynamic>>> futureMaps = client.query(
+      'biblio',
+      columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
+      where: 'isbn = ?',
+      whereArgs: [isbn],
+    );
+
+    var maps = await futureMaps;
+    if (maps.length > 0) {
+      return maps.map((item) => Book.fromDb(item)).toList();
+    }
+    return null;
+  }
+
   Future<Database> init() async {
     Directory directory = await getApplicationDocumentsDirectory();
     String dbPath = join(directory.path, 'catalog.db');

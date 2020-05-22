@@ -17,14 +17,17 @@ class CatalogScanTab extends StatefulWidget {
 
 class _CatalogScanState extends State<CatalogScanTab> {
   ScanResult scanResult;
- 
+
   Widget _buildScanButton() {
-    return Center(
-      child: CupertinoButton(
-        child: Text('スキャン'),
-        onPressed: () {
-          barcodeScanning();
-        }
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Center(
+        child: CupertinoButton(
+          color: CupertinoColors.activeBlue,
+          borderRadius: BorderRadius.circular(20),
+          child: Text('スキャン'),
+          onPressed: () => barcodeScanning(),
+        ),
       ),
     );
   }
@@ -36,7 +39,7 @@ class _CatalogScanState extends State<CatalogScanTab> {
       );
 
       final result = await BarcodeScanner.scan(options: options);
-      
+
       setState(() => scanResult = result);
     } on PlatformException catch (e) {
       var result = ScanResult(
@@ -46,10 +49,10 @@ class _CatalogScanState extends State<CatalogScanTab> {
 
       if (e.code == BarcodeScanner.cameraAccessDenied) {
         setState(() {
-          result.rawContent = 'The user did not grant the camera permission!';
+          result.rawContent = 'バーコードスキャンにはカメラの使用を許可してください。';
         });
       } else {
-        result.rawContent = 'Unknown error: $e';
+        result.rawContent = '不明なエラー($e)が発生しました。';
       }
       setState(() {
         scanResult = result;
@@ -69,14 +72,14 @@ class _CatalogScanState extends State<CatalogScanTab> {
         child: SizedBox(
           height: 200.0,
           child: FutureBuilder(
-            future: model.search(scanResult.rawContent),
+            future: model.searchByIsbn(scanResult.rawContent),
             builder:
                 (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return CupertinoActivityIndicator();
               }
               if (snapshot.hasError) {
-                return Text('エラーが発生しました。');
+                return Text('検索エラーが発生しました。');
               }
               if (snapshot.hasData) {
                 return ListView.builder(
