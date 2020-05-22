@@ -30,14 +30,12 @@ class CatalogDatabase {
 
   Future<List<Book>> search(String term) async {
     var client = await db;
-    //final sql = 'select id, marcno, shelf, title, pub, isbn from biblio where isbn=? or title like ?';
-    //final Future<List<Map<String, dynamic>>> futureMaps = client.rawQuery(sql, [term, '%term%']);
 
     final Future<List<Map<String, dynamic>>> futureMaps = client.query(
       'biblio',
       columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
-      where: 'isbn=? or title like ?',
-      whereArgs: [term, '%$term%'],
+      where: 'isbn like ? or title like ?',
+      whereArgs: ['$term%', '%$term%'],
     );
 
     var maps = await futureMaps;

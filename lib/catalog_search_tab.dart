@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'search_bar.dart';
 import 'book_row_item.dart';
@@ -7,18 +8,18 @@ import 'styles.dart';
 import 'model/book.dart';
 import 'model/catalog_database.dart';
 
-class CatalogSearchPage extends StatefulWidget {
+class CatalogSearchTab extends StatefulWidget {
   @override
   _CatalogSearchState createState() {
     return _CatalogSearchState();
   }
 }
 
-class _CatalogSearchState extends State<CatalogSearchPage> {
+class _CatalogSearchState extends State<CatalogSearchTab> {
   TextEditingController _controller;
   FocusNode _focusNode;
   String _terms = '';
-
+ 
   @override
   void initState() {
     super.initState();
@@ -48,9 +49,11 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
       ),
     );
   }
+  
 
   Widget _buildResults() {
     final model = CatalogDatabase();
+
     if (_terms == '') {
       return Text('');
     } else {
@@ -67,7 +70,6 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
               if (snapshot.hasError) {
                 return Text('エラーが発生しました。');
               }
-
               if (snapshot.hasData) {
                 return ListView.builder(
                   itemBuilder: (context, index) => BookRowItem(
@@ -89,16 +91,22 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Styles.scaffoldBackground,
+    return CupertinoPageScaffold(
+      backgroundColor: Styles.scaffoldBackground,
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('鈴木家蔵書目録'),
       ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            _buildSearchBox(),
-            _buildResults(),
-          ],
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: Styles.scaffoldBackground,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildSearchBox(),
+              _buildResults(),
+            ],
+          ),
         ),
       ),
     );
