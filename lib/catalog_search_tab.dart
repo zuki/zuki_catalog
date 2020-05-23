@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'search_bar.dart';
 import 'book_row_item.dart';
@@ -23,7 +22,7 @@ class _CatalogSearchState extends State<CatalogSearchTab> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController()..addListener(_onTextChanged);
+    _controller = TextEditingController();
     _focusNode = FocusNode();
   }
 
@@ -34,9 +33,9 @@ class _CatalogSearchState extends State<CatalogSearchTab> {
     super.dispose();
   }
 
-  void _onTextChanged() {
+  void _onSubmitted(String text) {
     setState(() {
-      _terms = _controller.text;
+      _terms = text;
     });
   }
 
@@ -46,6 +45,7 @@ class _CatalogSearchState extends State<CatalogSearchTab> {
       child: SearchBar(
         controller: _controller,
         focusNode: _focusNode,
+        callback: _onSubmitted,
       ),
     );
   }

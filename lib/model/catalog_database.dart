@@ -34,8 +34,8 @@ class CatalogDatabase {
     final Future<List<Map<String, dynamic>>> futureMaps = client.query(
       'biblio',
       columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
-      where: 'isbn like ? or title like ?',
-      whereArgs: ['$term%', '%$term%'],
+      where: 'isbn=? or title like ?',
+      whereArgs: [term, '%$term%'],
     );
 
     var maps = await futureMaps;
