@@ -1,16 +1,25 @@
 # zuki_catalog
 
-A new Flutter project.
+Flutterで作成したオフライン目録検索。バーコードスキャンによるISBN検索とタイトルの中間一致検索が可能。
 
-## Getting Started
+## 実装
 
-This project is a starting point for a Flutter application.
+1. データベース検索には`sqflite`を使用。
+2. バーコードスキャンには`barcode_scan`を使用。
+3. v1.0は逐次検索、v1.1は検索キー入力で検索。
 
-A few resources to get you started if this is your first Flutter project:
+## 参考サイト
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- [Building a Cupertino app with Flutter](https://codelabs.developers.google.com/codelabs/flutter-cupertino/index.html)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+    iOS UI(Cupertino Library)アプリを作成するためのコードを借用。
+
+- [Open an asset database](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/opening_asset_db.md)
+
+    既存のSQLite3データベースを使用するためのコードを借用。
+
+- [Using Sqflite in Flutter Application](https://medium.com/pharos-production/using-sqflite-in-flutter-application-bc21bf446154)
+
+    データベースをシングルトンで使用するためのコードを借用。
+
+
