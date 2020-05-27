@@ -20,14 +20,17 @@ class Book {
   @override
   String toString() => '$title - $pub' + (isbn != '' ? ' ($isbn)' : '');
 
-  Map<String, dynamic> toMapForDb() {
-    var map = Map<String, dynamic>();
-    map['id']     = id;
-    map['marcno'] = marcno ?? '';
-    map['shelf']  = shelf ?? '';
-    map['title']  = title ?? '';
-    map['pub']    = pub ?? '';
-    map['isbn']   = isbn ?? '';
+  Map<String, dynamic> toMap() {
+    var map = <String, dynamic> {
+      marcno: marcno ?? '',
+      shelf:  shelf ?? '',
+      title:  title ?? '',
+      pub:    pub ?? '',
+      isbn:   isbn ?? ''
+    };
+    if (id != null) {
+      map['id'] = id;
+    }
     return map;
   }
 

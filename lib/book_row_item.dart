@@ -5,10 +5,11 @@ import 'styles.dart';
 
 class BookRowItem extends StatelessWidget {
   const BookRowItem({
+    key,
     this.index,
     this.book,
     this.lastItem,
-  });
+  }) : super(key: key);
 
   final Book book;
   final int index;

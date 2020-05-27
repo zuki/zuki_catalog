@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'book.dart';
@@ -34,8 +33,9 @@ class CatalogDatabase {
     final Future<List<Map<String, dynamic>>> futureMaps = client.query(
       'biblio',
       columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
-      where: 'isbn=? or title like ?',
-      whereArgs: [term, '%$term%'],
+      where: 'isbn like ? or title like ?',
+      whereArgs: ['$term%', '%$term%'],
+      orderBy: 'title',
     );
 
     var maps = await futureMaps;
@@ -62,9 +62,31 @@ class CatalogDatabase {
     return null;
   }
 
+  Future<Book> insert(Book book) async {
+    await _database.transaction((txn) async {
+      book.id = await txn.rawInsert(
+        'insert into biblio(marcno, shelf, title, pub, isbn) values(?, ?, ?, ?, ?)',
+        [book.marcno, book.shelf, book.title, book.pub, book.isbn]
+      );
+    });
+
+    return book;
+  }
+
+  Future<int> delete(int id) async {
+    return await _database.delete('biblio', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> update(Book book) async {
+    return await _database.update('biblio', book.toMap(),
+        where: 'id = ?', whereArgs: [book.id]);
+  }
+
+  Future close() async => _database.close();
+
   Future<Database> init() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    String dbPath = join(directory.path, 'catalog.db');
+    var directory = await getDatabasesPath();
+    String dbPath = join(directory, 'catalog.db');
 
     // Check if the database exists
     final exists = await databaseExists(dbPath);
@@ -75,7 +97,7 @@ class CatalogDatabase {
 
       // Make sure the parent directory exists
       try {
-        await Directory(dirname(dbPath)).create(recursive: true);
+        await Directory(directory).create(recursive: true);
       } catch (_) {}
 
       // Copy from asset
@@ -89,7 +111,7 @@ class CatalogDatabase {
       print("Opening existing database");
     }
     // open the database
-    var database = await openDatabase(dbPath, readOnly: true);
+    var database = await openDatabase(dbPath);
     return database;
   }
 }
