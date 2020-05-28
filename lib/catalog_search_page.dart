@@ -42,21 +42,12 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     });
   }
 
-/*
-  void _onSubmitted(String text) {
-    setState(() {
-      _terms = text;
-    });
-  }
-*/
-
   Widget _buildSearchBox() {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: SearchBar(
         controller: _controller,
         focusNode: _focusNode,
-//        callback: _onSubmitted,
       ),
     );
   }
@@ -86,10 +77,10 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
             builder:
                 (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return CupertinoActivityIndicator();
+                return const CupertinoActivityIndicator();
               }
               if (snapshot.hasError) {
-                return Text('検索エラーが発生しました。');
+                return const Text('検索エラーが発生しました。');
               }
               if (snapshot.hasData) {
                 return ListView.builder(
@@ -102,7 +93,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
                   itemCount: snapshot.data.length,
                 );
               } else {
-                return Text('該当図書はありません。');
+                return const Text('該当図書はありません。');
               }
             },
           ),

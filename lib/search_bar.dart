@@ -6,12 +6,10 @@ class SearchBar extends StatelessWidget {
   const SearchBar({
     @required this.controller,
     @required this.focusNode,
-//    @required this.callback,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
-//  final ValueChanged<String> callback;
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +36,6 @@ class SearchBar extends StatelessWidget {
                 style: Styles.searchText,
                 cursorColor: Styles.searchCursorColor,
                 placeholder: 'タイトル、著者などを入力してください',
-//                textInputAction: TextInputAction.search,
-//                onSubmitted: callback,
               ),
             ),
             GestureDetector(
