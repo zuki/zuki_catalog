@@ -25,7 +25,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _controller = TextEditingController()..addListener(_onTextChanged);
     _focusNode = FocusNode();
   }
 
@@ -36,11 +36,19 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     super.dispose();
   }
 
+  void _onTextChanged() {
+    setState(() {
+      _terms = _controller.text;
+    });
+  }
+
+/*
   void _onSubmitted(String text) {
     setState(() {
       _terms = text;
     });
   }
+*/
 
   Widget _buildSearchBox() {
     return Padding(
@@ -48,7 +56,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
       child: SearchBar(
         controller: _controller,
         focusNode: _focusNode,
-        callback: _onSubmitted,
+//        callback: _onSubmitted,
       ),
     );
   }
@@ -58,8 +66,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
 
     if (_terms == '') {
       return Text('');
-    }
-    else if (_errMessage != '') {
+    } else if (_errMessage != '') {
       return CupertinoAlertDialog(
         title: Text("エラー"),
         content: Text(_errMessage),
@@ -75,8 +82,9 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
         child: SizedBox(
           height: 200.0,
           child: FutureBuilder(
-            future: model.search(_terms),
-            builder: (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
+            future: (isIsbn(_terms) ? model.searchByIsbn(_terms) : model.search(_terms)),
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return CupertinoActivityIndicator();
               }
@@ -84,7 +92,6 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
                 return Text('検索エラーが発生しました。');
               }
               if (snapshot.hasData) {
-                _controller.clear();
                 return ListView.builder(
                   itemBuilder: (context, index) => BookRowItem(
                     key: Key(index.toString()),
@@ -104,6 +111,13 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     }
   }
 
+  bool isIsbn(String value) {
+    if (value.length != 13) {
+      return false;
+    }
+    return int.tryParse(value) != null;
+  }
+
   void barcodeScanning() {
     final options = ScanOptions(
       restrictFormat: [BarcodeFormat.ean13],
@@ -111,12 +125,19 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     final future = BarcodeScanner.scan(options: options);
     future.then((result) {
       setState(() {
-        _terms = isbn13(result.rawContent);
+        final isbn = isbn13(result.rawContent);
+        _controller.value = TextEditingValue(
+          text: isbn,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: isbn.length),
+          ),
+        );
       });
     }).catchError((e) {
       setState(() {
-        _errMessage = (e.code == BarcodeScanner.cameraAccessDenied) ? 
-        'バーコードスキャンにはカメラの使用を許可してください。' : '不明なエラー($e)が発生しました。';
+        _errMessage = (e.code == BarcodeScanner.cameraAccessDenied)
+            ? 'バーコードスキャンにはカメラの使用を許可してください。'
+            : '不明なエラー($e)が発生しました。';
       });
     });
   }
@@ -128,7 +149,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     const NUMVALUES = "0123456789";
     final digits = "978$isbn".split('');
     var sum = 0;
-    for (int i=0; i<12; i++) {
+    for (int i = 0; i < 12; i++) {
       final val = NUMVALUES.indexOf(digits[i]);
       sum += val * (i % 2 == 0 ? 1 : 3);
     }
