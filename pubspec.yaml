@@ -31,7 +31,6 @@ dependencies:
 
   sqflite: ^1.3.0
   barcode_scan: ^3.0.0
-  http: ^0.12.0
 
 dev_dependencies:
   flutter_test:
