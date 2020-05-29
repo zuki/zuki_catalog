@@ -22,4 +22,14 @@ Flutterで作成したオフライン目録検索。バーコードスキャン�
 
     データベースをシングルトンで使用するためのコードを借用。
 
+## iOSアプリのサイズ
+
+このソースを普通に`flutter run --release`で作成したアプリは200MB超えのバカでかいサイズとなった。これは[バグではない](https://github.com/flutter/flutter/issues/47101#issuecomment-567522077)そうで、[次のようにする](https://github.com/flutter/flutter/issues/49855)と半分以下(108.4MB)になった。もっとも、それでもまだまだ大きい。同等機能のネイティブアプリのサイズは28.8MBで3倍強である。まだ方法はありそう。
+
+```bash
+$ flutter build ios --profile
+$ flutter install
+```
+
+
 
