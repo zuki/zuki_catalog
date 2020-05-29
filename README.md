@@ -31,5 +31,10 @@ $ flutter build ios --profile
 $ flutter install
 ```
 
+以下の難読化とシンボルの書き出しを行ったが、サイズは102.8MBとあまり小さくならなかった。
+
+```bash
+$ flutter build ios --profile --obfuscate --split-debug-info=./info
+```
 
 
