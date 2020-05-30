@@ -56,48 +56,53 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     final model = CatalogDatabase();
 
     if (_terms == '') {
-      return Text('');
+      return const Text('');
     } else if (_errMessage != '') {
       return CupertinoAlertDialog(
-        title: Text("エラー"),
+        title: const Text("エラー"),
         content: Text(_errMessage),
         actions: <Widget>[
           CupertinoDialogAction(
-            child: Text("OK"),
+            child: const Text("OK"),
             onPressed: () => setState(() => _errMessage = ''),
           ),
         ],
       );
     } else {
-      return Expanded(
-        child: SizedBox(
-          height: 200.0,
-          child: FutureBuilder(
-            future: (isIsbn(_terms) ? model.searchByIsbn(_terms) : model.search(_terms)),
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const CupertinoActivityIndicator();
-              }
-              if (snapshot.hasError) {
-                return const Text('検索エラーが発生しました。');
-              }
-              if (snapshot.hasData) {
-                return ListView.builder(
-                  itemBuilder: (context, index) => BookRowItem(
-                    key: Key(index.toString()),
-                    index: index,
-                    book: snapshot.data[index],
-                    lastItem: index == snapshot.data.length - 1,
+      return FutureBuilder(
+        future: (isIsbn(_terms)
+            ? model.searchByIsbn(_terms)
+            : model.search(_terms)),
+        builder: (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const CupertinoActivityIndicator();
+          }
+          if (snapshot.hasError) {
+            return const Text('検索エラーが発生しました。');
+          }
+          if (snapshot.hasData) {
+            return Column(
+              children: <Widget>[
+                Text('件数: ${snapshot.data.length}'),
+                const Divider(),
+                SizedBox(
+                  height: 670,
+                  child: ListView.builder(
+                    itemBuilder: (context, index) => BookRowItem(
+                      key: Key(index.toString()),
+                      index: index,
+                      book: snapshot.data[index],
+                      lastItem: index == snapshot.data.length - 1,
+                    ),
+                    itemCount: snapshot.data.length,
                   ),
-                  itemCount: snapshot.data.length,
-                );
-              } else {
-                return const Text('該当図書はありません。');
-              }
-            },
-          ),
-        ),
+                ),
+              ],
+            );
+          } else {
+            return const Text('該当図書はありません。');
+          }
+        },
       );
     }
   }
@@ -151,6 +156,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Styles.scaffoldBackground,
       navigationBar: CupertinoNavigationBar(
         middle: const Text('鈴木家蔵書目録'),
