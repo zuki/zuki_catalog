@@ -37,4 +37,6 @@ $ flutter install
 $ flutter build ios --profile --obfuscate --split-debug-info=./info
 ```
 
+## TODO
 
+`CupertinoTextField`の`onChanged`で入力文字を取得して逐次検索しているが、漢字変換途中の文字も拾ってしまう。拾わない方法をいろいろ調べたがまだ見つからない。
