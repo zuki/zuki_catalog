@@ -2,18 +2,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:zuki_catalog/model/catalog.dart';
 
 import 'search_bar.dart';
 import 'book_row_item.dart';
 import 'styles.dart';
-import 'model/book.dart';
-import 'model/catalog_database.dart';
+import 'utils.dart';
 
 class CatalogSearchPage extends StatefulWidget {
+  CatalogSearchPage({Key key, this.model}) : super(key: key);
+
+  final CatalogModel model;
+
   @override
-  _CatalogSearchState createState() {
-    return _CatalogSearchState();
-  }
+  _CatalogSearchState createState() => _CatalogSearchState();
 }
 
 class _CatalogSearchState extends State<CatalogSearchPage> {
@@ -22,9 +25,46 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
   String _terms = '';
   String _errMessage = '';
 
+  void _showModalPopupOnNoHit() {
+    final status = widget.model.status;
+    if (status is CatalogStatusNoHit) {
+      final act = CupertinoActionSheet(
+        title: const Text('該当図書はありません。'),
+        actions: <Widget>[
+          CupertinoActionSheetAction(
+            child: const Text('追加する'),
+            onPressed: () {
+              final terms = _terms;
+              _setText('');
+              Navigator.of(context)..pop()..pop();
+              Navigator.pushNamed(
+                context, '/admin', 
+                arguments: terms,
+              );
+            },
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          child: const Text('追加しない'),
+          isDefaultAction: true,
+          onPressed: () {
+            _setText('');
+            Navigator.of(context)..pop()..pop();
+          },
+        ),
+      );
+      //widget.model.clear();
+      showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) => act,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    widget.model.addListener(_showModalPopupOnNoHit);
     _controller = TextEditingController()..addListener(_onTextChanged);
     _focusNode = FocusNode();
   }
@@ -33,6 +73,7 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
   void dispose() {
     _focusNode.dispose();
     _controller.dispose();
+    widget.model.removeListener(_showModalPopupOnNoHit);
     super.dispose();
   }
 
@@ -40,6 +81,15 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     setState(() {
       _terms = _controller.text;
     });
+  }
+
+  void _setText(String value) {
+    _controller.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.fromPosition(
+        TextPosition(offset: value.length),
+      ),
+    );
   }
 
   Widget _buildSearchBox() {
@@ -53,8 +103,6 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
   }
 
   Widget _buildResults() {
-    final model = CatalogDatabase();
-
     if (_terms == '') {
       return const Text('');
     } else if (_errMessage != '') {
@@ -69,49 +117,44 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
         ],
       );
     } else {
-      return FutureBuilder(
-        future: (isIsbn(_terms)
-            ? model.searchByIsbn(_terms)
-            : model.search(_terms)),
-        builder: (BuildContext context, AsyncSnapshot<List<Book>> snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const CupertinoActivityIndicator();
-          }
-          if (snapshot.hasError) {
-            return const Text('検索エラーが発生しました。');
-          }
-          if (snapshot.hasData) {
-            return Column(
-              children: <Widget>[
-                Text('件数: ${snapshot.data.length}'),
-                const Divider(),
-                SizedBox(
-                  height: 670,
-                  child: ListView.builder(
-                    itemBuilder: (context, index) => BookRowItem(
-                      key: Key(index.toString()),
-                      index: index,
-                      book: snapshot.data[index],
-                      lastItem: index == snapshot.data.length - 1,
+      widget.model.search(_terms);
+      return ScopedModel<CatalogModel>(
+        model: widget.model,
+        child: ScopedModelDescendant<CatalogModel>(
+          builder: (context, child, model) {
+            final status = model.status;
+            if (status is CatalogStatusLoading) {
+              return const CupertinoActivityIndicator();
+            } else if (status is CatalogStatusFailure) {
+              return Text('検索エラー(${status.error.toString()})が発生しました。');
+            } else if (status is CatalogStatusSuccess) {
+              return Column(
+                children: <Widget>[
+                  Text('件数: ${status.results.length}'),
+                  const Divider(),
+                  SizedBox(
+                    height: 670,
+                    child: ListView.builder(
+                      itemBuilder: (context, index) => BookRowItem(
+                        key: Key(index.toString()),
+                        index: index,
+                        book: status.results[index],
+                        lastItem: index == status.results.length - 1,
+                      ),
+                      itemCount: status.results.length,
                     ),
-                    itemCount: snapshot.data.length,
                   ),
-                ),
-              ],
-            );
-          } else {
-            return const Text('該当図書はありません。');
-          }
-        },
+                ],
+              );
+            } else if (status is CatalogStatusNoHit) {
+              return const Text('該当図書はありません。');
+            } else {
+              return const Text('');
+            }
+          },
+        ),
       );
     }
-  }
-
-  bool isIsbn(String value) {
-    if (value.length != 13) {
-      return false;
-    }
-    return int.tryParse(value) != null;
   }
 
   void barcodeScanning() {
@@ -120,15 +163,8 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     );
     final future = BarcodeScanner.scan(options: options);
     future.then((result) {
-      setState(() {
-        final isbn = isbn13(result.rawContent);
-        _controller.value = TextEditingValue(
-          text: isbn,
-          selection: TextSelection.fromPosition(
-            TextPosition(offset: isbn.length),
-          ),
-        );
-      });
+      final isbn = Utils.isbn13(result.rawContent);
+      setState(() => _setText(isbn));
     }).catchError((e) {
       setState(() {
         _errMessage = (e.code == BarcodeScanner.cameraAccessDenied)
@@ -136,21 +172,6 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
             : '不明なエラー($e)が発生しました。';
       });
     });
-  }
-
-  String isbn13(String isbn) {
-    if (isbn.length == 13) {
-      return isbn;
-    }
-    const NUMVALUES = "0123456789";
-    final digits = "978$isbn".split('');
-    var sum = 0;
-    for (int i = 0; i < 12; i++) {
-      final val = NUMVALUES.indexOf(digits[i]);
-      sum += val * (i % 2 == 0 ? 1 : 3);
-    }
-    final chk = (sum % 10 == 0) ? "0" : (10 - (sum % 10)).toString();
-    return "978$isbn$chk";
   }
 
   @override

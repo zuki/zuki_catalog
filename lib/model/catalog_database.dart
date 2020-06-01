@@ -15,14 +15,22 @@ class CatalogDatabase {
   CatalogDatabase._internal();
 
   factory CatalogDatabase() {
-    if (_database == null) {
-      init();
-    }
     return _instance;
   }
 
+  Future<Database> get db async {
+    if (_database != null) {
+      return _database;
+    }
+
+    _database = await init();
+    return _database;
+  }
+
   Future<List<Book>> search(String term) async {
-    final Future<List<Map<String, dynamic>>> futureMaps = _database.query(
+    var database = await db;
+
+    final Future<List<Map<String, dynamic>>> futureMaps = database.query(
       'biblio',
       columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
       where: 'isbn like ? or title like ?',
@@ -38,7 +46,9 @@ class CatalogDatabase {
   }
 
   Future<List<Book>> searchByIsbn(String isbn) async {
-    final Future<List<Map<String, dynamic>>> futureMaps = _database.query(
+    var database = await db;
+
+    final Future<List<Map<String, dynamic>>> futureMaps = database.query(
       'biblio',
       columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
       where: 'isbn = ?',
@@ -74,7 +84,7 @@ class CatalogDatabase {
 
   Future close() async => _database.close();
 
-  static void init() async {
+  Future<Database> init() async {
     var directory = await getDatabasesPath();
     String dbPath = join(directory, 'catalog.db');
 
@@ -101,8 +111,7 @@ class CatalogDatabase {
       print("Opening existing database");
     }
     // open the database
-    openDatabase(dbPath).then((db) {
-      _database = db;
-    }).catchError((_) => {});
+    var database = await openDatabase(dbPath);
+    return database;
   }
 }
