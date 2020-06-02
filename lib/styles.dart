@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 
 abstract class Styles {
-  static const TextStyle bookRowItem = TextStyle(
+  static const TextStyle rowItem = TextStyle(
     color: Color.fromRGBO(0, 0, 0, 0.8),
     fontSize: 18,
     fontStyle: FontStyle.normal,
@@ -16,7 +16,7 @@ abstract class Styles {
     fontWeight: FontWeight.normal,
   );
 
-  static const Color bookRowDivider = Color(0xFFD9D9D9);
+  static const Color rowDivider = Color(0xFFD9D9D9);
 
   static const Color scaffoldBackground = Color(0xfff0f0f0);
 

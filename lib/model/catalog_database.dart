@@ -45,21 +45,24 @@ class CatalogDatabase {
     return null;
   }
 
-  Future<List<Book>> searchByIsbn(String isbn) async {
+  Future<List<Book>> searchByField(String field, String value) async {
     var database = await db;
-
-    final Future<List<Map<String, dynamic>>> futureMaps = database.query(
-      'biblio',
-      columns: ['id', 'marcno', 'shelf', 'title', 'pub', 'isbn'],
-      where: 'isbn = ?',
-      whereArgs: [isbn],
-    );
-
-    var maps = await futureMaps;
+    
+    final sql = 'SELECT id, marcno, shelf, title, pub, isbn FROM biblio WHERE $field = $value';
+    
+    List<Map<String, dynamic>> maps = await database.rawQuery(sql);
     if (maps.length > 0) {
       return maps.map((item) => Book.fromDb(item)).toList();
     }
     return null;
+  }
+
+  Future<List<Book>> searchByIsbn(String isbn) async {
+    return searchByField('isbn', isbn);
+  }
+
+  Future<List<Book>> searchById(int id) async {
+    return searchByField('id', '$id');
   }
 
   Future<Book> insert(Book book) async {

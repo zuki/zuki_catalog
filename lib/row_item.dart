@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'model/book.dart';
 import 'styles.dart';
 
-class BookRowItem extends StatelessWidget {
-  const BookRowItem({
+class RowItem extends StatelessWidget {
+  const RowItem({
     key,
     this.index,
     this.book,
@@ -30,7 +30,7 @@ class BookRowItem extends StatelessWidget {
           Expanded(
             child:  Text(
               book.toString(),
-              style: Styles.bookRowItem,
+              style: Styles.rowItem,
             ),
           ),        
         ],
@@ -46,7 +46,7 @@ class BookRowItem extends StatelessWidget {
         row,
         Container(
           height: 1,
-          color: Styles.bookRowDivider,
+          color: Styles.rowDivider,
         ),
       ],
     );

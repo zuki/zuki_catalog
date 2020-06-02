@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'model/catalog.dart';
-import 'catalog_search_page.dart';
-import 'catalog_admin_page.dart';
+import 'search_page.dart';
+import 'admin_page.dart';
 
 class CupertinoCatalogApp extends StatelessWidget {
   CupertinoCatalogApp({Key key}) : super(key: key);
@@ -15,10 +15,10 @@ class CupertinoCatalogApp extends StatelessWidget {
     );
 
     return CupertinoApp(
-      home: CatalogSearchPage(model: CatalogModel()),
+      home: SearchPage(model: CatalogModel()),
       routes: <String, WidgetBuilder> {
-        '/home': (BuildContext context) => CatalogSearchPage(model: CatalogModel()),
-        '/admin': (BuildContext context) => CatalogAdminPage(),
+        '/home': (BuildContext context) => SearchPage(model: CatalogModel()),
+        '/admin': (BuildContext context) => AdminPage(),
       },
     );
   }

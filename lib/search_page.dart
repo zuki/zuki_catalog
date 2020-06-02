@@ -3,31 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:zuki_catalog/model/catalog.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'search_bar.dart';
-import 'book_row_item.dart';
+import 'row_item.dart';
 import 'styles.dart';
 import 'utils.dart';
+import 'model/catalog.dart';
+import 'model/catalog_database.dart';
 
-class CatalogSearchPage extends StatefulWidget {
-  CatalogSearchPage({Key key, this.model}) : super(key: key);
+class SearchPage extends StatefulWidget {
+  SearchPage({Key key, this.model}) : super(key: key);
 
   final CatalogModel model;
 
   @override
-  _CatalogSearchState createState() => _CatalogSearchState();
+  _SearchPageState createState() => _SearchPageState();
 }
 
-class _CatalogSearchState extends State<CatalogSearchPage> {
+class _SearchPageState extends State<SearchPage> {
   TextEditingController _controller;
   FocusNode _focusNode;
   String _terms = '';
   String _errMessage = '';
-
+ 
   void _showModalPopupOnNoHit() {
     final status = widget.model.status;
     if (status is CatalogStatusNoHit) {
+      if (!Utils.isIsbn(_terms)) {
+        return;
+      }
       final act = CupertinoActionSheet(
         title: const Text('該当図書はありません。'),
         actions: <Widget>[
@@ -75,6 +80,25 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
     _controller.dispose();
     widget.model.removeListener(_showModalPopupOnNoHit);
     super.dispose();
+  }
+
+  void _onDelete(int id) {
+    CatalogDatabase catalog = CatalogDatabase();
+
+    catalog.delete(id).then((count) {
+      Fluttertoast.showToast(
+        msg: '削除しました',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        backgroundColor: Colors.pink[100],
+        textColor: Colors.black,
+      );
+      _setText('');
+      FocusScope.of(context).requestFocus(FocusNode());
+    }).catchError((e) {
+      Fluttertoast.showToast(
+          msg: 'id: $id は削除できませんでした。\n\n${e.toString()}');
+    });
   }
 
   void _onTextChanged() {
@@ -135,13 +159,33 @@ class _CatalogSearchState extends State<CatalogSearchPage> {
                   SizedBox(
                     height: 670,
                     child: ListView.builder(
-                      itemBuilder: (context, index) => BookRowItem(
-                        key: Key(index.toString()),
-                        index: index,
-                        book: status.results[index],
-                        lastItem: index == status.results.length - 1,
-                      ),
                       itemCount: status.results.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Dismissible(
+                          key: Key(status.results[index].id.toString()),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (direction) {
+                            _onDelete(status.results[index].id);
+                          },
+                          background: Container(
+                            alignment: Alignment.centerLeft,
+                            color: Colors.redAccent[700],
+                            child: const Padding(
+                              padding: const EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 0.0),
+                              child: const Icon(
+                                CupertinoIcons.delete_solid,
+                                color: Colors.white
+                              ),
+                            ),
+                          ),
+                          child: RowItem(
+                            key: Key(status.results[index].id.toString()),
+                            index: index,
+                            book: status.results[index],
+                            lastItem: index == status.results.length - 1,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

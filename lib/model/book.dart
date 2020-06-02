@@ -22,15 +22,13 @@ class Book {
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic> {
-      marcno: marcno ?? '',
-      shelf:  shelf ?? '',
-      title:  title ?? '',
-      pub:    pub ?? '',
-      isbn:   isbn ?? ''
-    };
-    if (id != null) {
-      map['id'] = id;
-    }
+      'id':     id,
+      'marcno': marcno ?? '',
+      'shelf':  shelf  ?? '',
+      'title':  title  ?? '',
+      'pub':    pub    ?? '',
+      'isbn':   isbn   ?? '',
+    };  
     return map;
   }
 
