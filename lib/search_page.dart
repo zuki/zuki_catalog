@@ -26,42 +26,45 @@ class _SearchPageState extends State<SearchPage> {
   FocusNode _focusNode;
   String _terms = '';
   String _errMessage = '';
- 
-  void _showModalPopupOnNoHit() {
+
+  void _showDialogOnNoHit() {
     final status = widget.model.status;
     if (status is CatalogStatusNoHit) {
       if (!Utils.isIsbn(_terms)) {
         return;
       }
-      final act = CupertinoActionSheet(
-        title: const Text('該当図書はありません。'),
-        actions: <Widget>[
-          CupertinoActionSheetAction(
-            child: const Text('追加する'),
-            onPressed: () {
-              final terms = _terms;
-              _setText('');
-              Navigator.of(context)..pop()..pop();
-              Navigator.pushNamed(
-                context, '/admin', 
-                arguments: terms,
-              );
-            },
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          child: const Text('追加しない'),
-          isDefaultAction: true,
-          onPressed: () {
-            _setText('');
-            Navigator.of(context)..pop()..pop();
-          },
-        ),
-      );
-      //widget.model.clear();
-      showCupertinoModalPopup(
+      showDialog<void>(
         context: context,
-        builder: (BuildContext context) => act,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: const Text('該当図書はありません。'),
+            content: const Text('レコードを追加しますか？'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('はい'),
+                onPressed: () {
+                  final terms = _terms;
+                  _setText('');
+                  Navigator.of(context)..pop()..pop();
+                  Navigator.pushNamed(
+                    context,
+                    '/admin',
+                    arguments: terms,
+                  );
+                },
+              ),
+              CupertinoDialogAction(
+                child: const Text('いいえ'),
+                isDefaultAction: true,
+                onPressed: () {
+                  _setText('');
+                  Navigator.of(context)..pop()..pop();
+                },
+              ),
+            ],
+          );
+        },
       );
     }
   }
@@ -69,7 +72,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    widget.model.addListener(_showModalPopupOnNoHit);
+    widget.model.addListener(_showDialogOnNoHit);
     _controller = TextEditingController()..addListener(_onTextChanged);
     _focusNode = FocusNode();
   }
@@ -78,7 +81,7 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _focusNode.dispose();
     _controller.dispose();
-    widget.model.removeListener(_showModalPopupOnNoHit);
+    widget.model.removeListener(_showDialogOnNoHit);
     super.dispose();
   }
 
@@ -90,14 +93,12 @@ class _SearchPageState extends State<SearchPage> {
         msg: '削除しました',
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.CENTER,
-        backgroundColor: Colors.pink[100],
-        textColor: Colors.black,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.white,
       );
-      _setText('');
       FocusScope.of(context).requestFocus(FocusNode());
     }).catchError((e) {
-      Fluttertoast.showToast(
-          msg: 'id: $id は削除できませんでした。\n\n${e.toString()}');
+      Fluttertoast.showToast(msg: 'id: $id は削除できませんでした。\n\n${e.toString()}');
     });
   }
 
@@ -169,13 +170,12 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           background: Container(
                             alignment: Alignment.centerLeft,
-                            color: Colors.redAccent[700],
+                            color: Colors.redAccent,
                             child: const Padding(
-                              padding: const EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 0.0),
-                              child: const Icon(
-                                CupertinoIcons.delete_solid,
-                                color: Colors.white
-                              ),
+                              padding: const EdgeInsets.fromLTRB(
+                                  20.0, 0.0, 0.0, 0.0),
+                              child: const Icon(CupertinoIcons.delete_solid,
+                                  color: Colors.white),
                             ),
                           ),
                           child: RowItem(

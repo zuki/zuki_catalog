@@ -58,8 +58,8 @@ class _AdminPageState extends State<AdminPage> {
         msg: '登録しました。',
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.CENTER,
-        backgroundColor: Colors.lightGreen[300],
-        textColor: Colors.black,
+        backgroundColor: Colors.lightGreen[900],
+        textColor: Colors.white,
       );
     }).catchError((e) {
       Fluttertoast.showToast(msg: e.toString());

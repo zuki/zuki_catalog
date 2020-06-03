@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'model/catalog.dart';
@@ -15,7 +16,13 @@ class CupertinoCatalogApp extends StatelessWidget {
     );
 
     return CupertinoApp(
+      localizationsDelegates: [
+        DefaultMaterialLocalizations.delegate,
+        DefaultCupertinoLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
       home: SearchPage(model: CatalogModel()),
+      locale: const Locale('ja', 'JP'),
       routes: <String, WidgetBuilder> {
         '/home': (BuildContext context) => SearchPage(model: CatalogModel()),
         '/admin': (BuildContext context) => AdminPage(),

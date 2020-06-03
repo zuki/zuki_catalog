@@ -9,20 +9,18 @@ class NdlSearch {
       return null;
     }
 
-    final client = http.Client();
-    final ndl_uri = 'https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&query=isbn=$isbn&recordSchema=dcndl_simple&recordPacking=string&dpid=iss-ndl-opac';
+    final _client = http.Client();
+    final _ndlUri = 'https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&recordSchema=dcndl_simple&recordPacking=string&dpid=iss-ndl-opac&query=isbn=';
+    final _exp = RegExp(r'<dc:identifier xsi:type="dcterms:URI">(.*?)</dc:identifier>');
 
     try {
-      final xml = await client.read(ndl_uri).timeout(
+      final xml = await _client.read(_ndlUri+isbn).timeout(
           const Duration(seconds: 15),
           onTimeout: () => throw TimeoutException('$isbn: タイムアウト'));
-
-      final exp = RegExp(
-          r'<dc:identifier xsi:type="dcterms:URI">(.*?)</dc:identifier>');
+      
       List<String> matches = [];
-
       for (String line in xml.split('\n')) {
-        final match = exp.firstMatch(line)?.group(1);
+        final match = _exp.firstMatch(line)?.group(1);
         if (match != null) {
           matches.add(match);
         }
@@ -30,9 +28,9 @@ class NdlSearch {
 
       var rec;
       for (String url in matches) {
-        var res = await client.read('${url}.json').timeout(
+        var res = await _client.read(url+'.json').timeout(
             const Duration(seconds: 15),
-            onTimeout: () => throw TimeoutException('${url}.json: タイムアウト'));
+            onTimeout: () => throw TimeoutException(url+'.json: タイムアウト'));
         rec = jsonDecode(res);
         if (rec['identifier']['JPNO'] != null) break;
       }
@@ -58,7 +56,7 @@ class NdlSearch {
       }
       return result;
     } finally {
-      client.close();
+      _client.close();
     }
   }
 }
