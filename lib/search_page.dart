@@ -38,7 +38,7 @@ class _SearchPageState extends State<SearchPage> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: const Text('該当図書はありません。'),
+            title: Text('${_terms}: 該当図書はありません。'),
             content: const Text('レコードを追加しますか？'),
             actions: <Widget>[
               CupertinoDialogAction(
@@ -46,7 +46,7 @@ class _SearchPageState extends State<SearchPage> {
                 onPressed: () {
                   final terms = _terms;
                   _setText('');
-                  Navigator.of(context)..pop()..pop();
+                  Navigator.of(context)..pop()..maybePop();
                   Navigator.pushNamed(
                     context,
                     '/admin',
@@ -59,7 +59,7 @@ class _SearchPageState extends State<SearchPage> {
                 isDefaultAction: true,
                 onPressed: () {
                   _setText('');
-                  Navigator.of(context)..pop()..pop();
+                  Navigator.of(context)..pop()..maybePop();
                 },
               ),
             ],
@@ -158,7 +158,7 @@ class _SearchPageState extends State<SearchPage> {
                   Text('件数: ${status.results.length}'),
                   const Divider(),
                   SizedBox(
-                    height: 670,
+                    height: 500,
                     child: ListView.builder(
                       itemCount: status.results.length,
                       itemBuilder: (BuildContext context, int index) {
@@ -237,12 +237,12 @@ class _SearchPageState extends State<SearchPage> {
           color: Styles.scaffoldBackground,
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              _buildSearchBox(),
-              _buildResults(),
-            ],
-          ),
+            child: Column(
+              children: [
+                _buildSearchBox(),
+                _buildResults(),
+              ],
+            ),
         ),
       ),
     );
